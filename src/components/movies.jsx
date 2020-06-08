@@ -5,16 +5,20 @@ import ListGroup from "./common/listGroup";
 import { getMovies } from "../services/fakeMovieService";
 import { paginate } from "../utils/paginate";
 import { getGenres } from "../services/fakeGenreService";
+import _ from "lodash";
 class Movies extends Component {
   state = {
     movies: [],
     genres: [],
-    selectedGenre: {},
     currentPage: 1,
     pageSize: 4,
+    sortCollumn: {
+      path: "title",
+      order: "asc",
+    },
   };
   componentDidMount() {
-    const genres = [{ name: "All Genres" }, ...getGenres()];
+    const genres = [{ _id: "", name: "All Genres" }, ...getGenres()];
     this.setState({
       movies: getMovies(),
       genres: genres,
@@ -43,6 +47,9 @@ class Movies extends Component {
       currentPage: 1,
     });
   };
+  handleSort = (sortCollumn) => {
+    this.setState({ sortCollumn });
+  };
   render() {
     const { length: count } = this.state.movies;
     if (count === 0) return <p>There are no movies in the database.</p>;
@@ -50,13 +57,15 @@ class Movies extends Component {
       currentPage,
       pageSize,
       selectedGenre,
+      sortCollumn,
       movies: allMovies,
     } = this.state;
     const filterd =
       selectedGenre && selectedGenre._id
         ? allMovies.filter((m) => m.genre._id === selectedGenre._id)
         : allMovies;
-    const movies = paginate(filterd, currentPage, pageSize);
+    const sorted = _.orderBy(filterd, [sortCollumn.path], [sortCollumn.order]);
+    const movies = paginate(sorted, currentPage, pageSize);
     return (
       <React.Fragment>
         <div className="container">
@@ -72,8 +81,10 @@ class Movies extends Component {
               <p>Showing {filterd.length} movies in the database.</p>
               <MoviesTable
                 movies={movies}
+                sortCollumn={sortCollumn}
                 onDelete={this.handleDelete}
                 onLike={this.handleLike}
+                onSort={this.handleSort}
               />
               <Pagination
                 itemCount={filterd.length}

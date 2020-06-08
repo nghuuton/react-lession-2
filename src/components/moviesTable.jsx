@@ -6,16 +6,28 @@ class MoviesTable extends Component {
     super(props);
     this.state = {};
   }
+  raiseSort = (path) => {
+    return () => {
+      const sortCollumn = { ...this.props.sortCollumn };
+      if (sortCollumn.path === path) {
+        sortCollumn.order = sortCollumn.order === "asc" ? "desc" : "asc";
+      } else {
+        sortCollumn.path = path;
+        sortCollumn.order = "asc";
+      }
+      this.props.onSort(sortCollumn);
+    };
+  };
   render() {
     const { movies, onDelete, onLike } = this.props;
     return (
       <table className="table">
         <thead>
           <tr>
-            <th>Title</th>
-            <th>Genre</th>
-            <th>Stock</th>
-            <th>Rate</th>
+            <th onClick={this.raiseSort("title")}>Title</th>
+            <th onClick={this.raiseSort("genre.name")}>Genre</th>
+            <th onClick={this.raiseSort("numberInStock")}>Stock</th>
+            <th onClick={this.raiseSort("dailyRentalRate")}>Rate</th>
             <th />
             <th />
           </tr>
